@@ -50,7 +50,7 @@ def build_vector_database():
     # BGE-small is an excellent, fast open-source model for search
     print("Loading BGE embedding model...")
     model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-    vector_dimension = model.get_sentence_embedding_dimension()
+    vector_dimension = model.get_sentence_dimension()
     
     # 2. Initialize Qdrant Vector Database
     # Using path creates a persistent local database folder in your project directory
