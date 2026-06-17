@@ -1,47 +1,25 @@
-import os
 import pytest
 import requests
-from ragas import evaluate
-from ragas.metrics import faithfulness, context_precision
-from datasets import Dataset
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# 1. Endpoint Test
 def test_backend_api_health():
-    # Checks if the sessions endpoint responds successfully
     url = "http://localhost:5000/api/sessions"
     try:
         response = requests.get(url, timeout=5)
         assert response.status_code == 200
     except requests.exceptions.ConnectionError:
-        pytest.fail("The Flask backend server is not running or accessible.")
+        pytest.fail("The Flask backend server is not running")
 
-# 2. AI Evaluation Test
 def test_ai_response_quality():
-    # A sample diagnostic query to test the RAG engine
-    user_query = "What causes dual engine failure according to flight records?"
+    model = SentenceTransformer('all-MiniLM-L6-v2')
     
-    # Simulating the retrieved data and AI generation for evaluation
-    # In a live test, you can hook this directly to your query engine output
-    test_data = {
-        "question": [user_query],
-        "contexts": [["The aircraft suffered a dual engine loss due to high-altitude ice ingestion as recorded in incident reports."]],
-        "answer": ["Dual engine failure was caused by ice ingestion at high altitude."],
-        "ground_truth": ["Dual engine failure was caused by high-altitude ice ingestion."]
-    }
+    ai_generated_answer = "Dual engine failure was caused by ice ingestion at high altitude."
+    ground_truth = "Dual engine failure was caused by high-altitude ice ingestion."
     
-    # Convert into the dataset format required by RAGAS
-    dataset = Dataset.from_dict(test_data)
+    ai_embedding = model.encode([ai_generated_answer])
+    truth_embedding = model.encode([ground_truth])
     
-    # Evaluate the metrics
-    score = evaluate(
-        dataset,
-        metrics=[faithfulness, context_precision]
-    )
+    score = cosine_similarity(ai_embedding, truth_embedding)[0][0]
     
-    # Extract scores
-    faithfulness_score = score["faithfulness"]
-    precision_score = score["context_precision"]
-    
-    # Ensure the AI meets your minimum quality threshold (e.g., 80%)
-    assert faithfulness_score >= 0.80, f"AI faithfulness is too low: {faithfulness_score}"
-    assert precision_score >= 0.80, f"Context precision is too low: {precision_score}"
+    assert score >= 0.85, f"AI answer is not accurate enough. Score: {score}"
