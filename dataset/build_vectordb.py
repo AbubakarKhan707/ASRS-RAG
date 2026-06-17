@@ -50,12 +50,12 @@ def build_vector_database():
     # BGE-small is an excellent, fast open-source model for search
     print("Loading BGE embedding model...")
     model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-    vector_dimension = model.get_sentence_dimension()
+    vector_dimension = model.get_embedding_dimension()
     
     # 2. Initialize Qdrant Vector Database
-    # Using path creates a persistent local database folder in your project directory
+    # Updated to point to the Dockerized Qdrant container
     print("Connecting to local Qdrant database...")
-    qdrant = QdrantClient(path="./qdrant_aviation_db")
+    qdrant = QdrantClient(url="http://localhost:6333")
     collection_name = "asrs_incidents"
     
     # Create the collection if it does not exist
@@ -74,7 +74,6 @@ def build_vector_database():
     batch_size = 250
     payloads = []
     texts_to_embed = []
-    # points = []
     total_inserted = 0
     
     print("Starting data ingestion and embedding...")

@@ -1,13 +1,23 @@
-import ollama
+import os
+from ollama import Client
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from dataset.build_vectordb import AviationTextNormalizer
 
 class LocalAviationRAG:
-    def __init__(self, db_path="./qdrant_aviation_db", collection_name="asrs_incidents", model_name="llama3"):
+    def __init__(self, db_path="./qdrant_aviation_db", collection_name="asrs_incidents", model_name="phi3"):
         print("Initializing Local RAG Engine...")
         self.model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-        self.qdrant = QdrantClient(path=db_path)
+        
+        # 1. DOCKERIZED QDRANT CONNECTION
+        qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+        self.qdrant = QdrantClient(url=f"http://{qdrant_host}:6333")
+        
+        # 2. DOCKERIZED OLLAMA CONNECTION
+        # This was missing! It connects to the secure container network.
+        ollama_url = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        self.ollama_client = Client(host=ollama_url)
+        
         self.collection_name = collection_name
         self.normalizer = AviationTextNormalizer()
         self.llm_model = model_name
@@ -55,7 +65,8 @@ class LocalAviationRAG:
         print("[System]: Querying local LLM via Ollama (Streaming Response)...\n")
         
         # 3. Stream the output from the local model container
-        response_stream = ollama.chat(
+        # Updated to use the secure dockerized client
+        response_stream = self.ollama_client.chat(
             model=self.llm_model,
             messages=[
                 {"role": "system", "content": system_instruction},

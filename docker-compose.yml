@@ -1,0 +1,37 @@
+services:
+  frontend:
+    build: ./asrs-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - QDRANT_HOST=qdrant
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - qdrant
+      - ollama
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: av-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+
+volumes:
+  qdrant_storage:
+  ollama_storage:

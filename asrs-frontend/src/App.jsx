@@ -12,7 +12,7 @@ function App() {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:5000/api/sessions');
+        const res = await fetch('/api/sessions');
         const data = await res.json();
         setSessions(data);
         if (data.length > 0) {
@@ -38,7 +38,7 @@ function App() {
 
   const createNewSession = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/sessions', { method: 'POST' });
+      const res = await fetch('/api/sessions', { method: 'POST' });
       const newSession = await res.json();
       setSessions([newSession, ...sessions]);
       setActiveSessionId(newSession.id);
@@ -50,7 +50,7 @@ function App() {
   const deleteSession = async (e, idToDelete) => {
     e.stopPropagation();
     try {
-      await fetch(`http://127.0.0.1:5000/api/sessions/${idToDelete}`, { method: 'DELETE' });
+      await fetch(`/api/sessions/${idToDelete}`, { method: 'DELETE' });
       const updatedSessions = sessions.filter(s => s.id !== idToDelete);
       setSessions(updatedSessions);
       
@@ -58,7 +58,6 @@ function App() {
         setActiveSessionId(updatedSessions.length > 0 ? updatedSessions[0].id : null);
       }
       
-      // Removed the React auto-creation logic here so it stays empty!
     } catch (err) {
       console.error("Failed to delete session:", err);
     }
@@ -88,7 +87,7 @@ function App() {
     }));
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/diagnose', {
+      const response = await fetch('/api/diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: userText, session_id: activeSessionId }),
@@ -188,7 +187,6 @@ function App() {
 
       {/* MAIN CHAT AREA - CONDITIONAL RENDERING */}
       {sessions.length === 0 ? (
-        // THE EMPTY STATE UI
         <main style={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff', height: '100vh' }}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ color: '#0277bd', marginBottom: '2rem' }}>No Active Diagnostic Sessions</h2>
@@ -201,11 +199,10 @@ function App() {
           </div>
         </main>
       ) : (
-        // THE NORMAL CHAT UI
         <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100vh', position: 'relative' }}>
           <header style={{ backgroundColor: '#ffffff', padding: '1.5rem 2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', zIndex: 10 }}>
             <h1 style={{ color: '#0277bd', margin: '0 0 0.2rem 0', fontSize: '1.5rem' }}>{activeSession?.title || 'No Session Active'}</h1>
-            <p style={{ color: '#546e7a', margin: 0, fontSize: '0.9rem' }}>Powered by BGE & Llama-3</p>
+            <p style={{ color: '#546e7a', margin: 0, fontSize: '0.9rem' }}>Powered by BGE & Phi-3</p>
           </header>
 
           <div style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '2rem 2rem 6rem 2rem' }}>
