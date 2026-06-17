@@ -13,7 +13,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Test Docker Architecture
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-python-version: '3.10'
+
+      - name: Install Testing Dependencies
         run: |
-          echo "Testing the build process for your containers..."
-          docker compose build
+          python -m pip install --upgrade pip
+          pip install pytest requests ragas datasets
+
+      - name: Build and Start Containers
+        run: |
+          docker compose up -d --build backend
+
+      - name: Run Automated Tests
+        run: |
+          pytest test_rag.py
