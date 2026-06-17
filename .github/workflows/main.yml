@@ -29,5 +29,5 @@ jobs:
 
       - name: Run Automated Tests
         run: |
-          pytest integration_tests/test.rag.py
+          pytest integration_tests/test_rag.py
 
